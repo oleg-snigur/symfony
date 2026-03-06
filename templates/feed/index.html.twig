@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Соціальна мережа{% endblock %}
+
+{% block body %}
+    <div class="max-w-xl mx-auto py-10">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8 border-b pb-4">Стрічка новин</h1>
+
+        {# Повідомлення про успіх #}
+        {% for message in app.flashes('success') %}
+            <div class="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-6 shadow-sm">
+                {{ message }}
+            </div>
+        {% endfor %}
+
+        {# Форма #}
+        <div class="bg-white p-6 rounded-xl shadow-sm mb-10 border border-gray-200">
+            {{ form_start(postForm) }}
+                {{ form_widget(postForm) }}
+            {{ form_end(postForm) }}
+        </div>
+
+        {# Стрічка (виводить тільки якщо є новий пост) #}
+        <div class="space-y-6">
+            {% if newPost %}
+                <div class="bg-white p-6 rounded-xl shadow-md border border-indigo-100 animate-pulse-once">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="font-bold text-indigo-600 text-lg">@{{ newPost.author }}</span>
+                        <span class="text-gray-400 text-xs">{{ newPost.date }}</span>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed">{{ newPost.content|nl2br }}</p>
+                </div>
+            {% else %}
+                <div class="text-center py-10 border-2 border-dashed border-gray-200 rounded-xl">
+                    <p class="text-gray-400 italic">Стрічка порожня. Напишіть щось першим!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
