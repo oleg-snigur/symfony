@@ -1,40 +1,85 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Соціальна мережа{% endblock %}
+{% block title %}Стрічка новин{% endblock %}
 
 {% block body %}
-    <div class="max-w-xl mx-auto py-10">
-        <h1 class="text-3xl font-bold text-gray-800 mb-8 border-b pb-4">Стрічка новин</h1>
-
-        {# Повідомлення про успіх #}
-        {% for message in app.flashes('success') %}
-            <div class="bg-indigo-50 border-l-4 border-indigo-500 text-indigo-700 p-4 mb-6 shadow-sm">
-                {{ message }}
-            </div>
-        {% endfor %}
-
-        {# Форма #}
-        <div class="bg-white p-6 rounded-xl shadow-sm mb-10 border border-gray-200">
-            {{ form_start(postForm) }}
-                {{ form_widget(postForm) }}
-            {{ form_end(postForm) }}
+<div class="max-w-4xl mx-auto py-10">
+    {# Шапка стрічки з інформацією про користувача та виходом #}
+    <div class="flex justify-between items-center mb-8 border-b pb-4">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Стрічка новин</h1>
+            <p class="text-gray-600">Вітаємо, <span class="font-semibold text-indigo-600">{{ app.user.userIdentifier }}</span>!</p>
         </div>
-
-        {# Стрічка (виводить тільки якщо є новий пост) #}
-        <div class="space-y-6">
-            {% if newPost %}
-                <div class="bg-white p-6 rounded-xl shadow-md border border-indigo-100 animate-pulse-once">
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="font-bold text-indigo-600 text-lg">@{{ newPost.author }}</span>
-                        <span class="text-gray-400 text-xs">{{ newPost.date }}</span>
-                    </div>
-                    <p class="text-gray-700 leading-relaxed">{{ newPost.content|nl2br }}</p>
-                </div>
-            {% else %}
-                <div class="text-center py-10 border-2 border-dashed border-gray-200 rounded-xl">
-                    <p class="text-gray-400 italic">Стрічка порожня. Напишіть щось першим!</p>
-                </div>
-            {% endif %}
-        </div>
+        <a href="{{ path('app_logout') }}" class="bg-red-50 text-red-600 px-4 py-2 rounded-lg hover:bg-red-100 transition font-medium">
+            Вийти
+        </a>
     </div>
+
+    {# Повідомлення про успішні дії (Flash messages) #}
+    {% for message in app.flashes('success') %}
+        <div class="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 shadow-sm">
+            {{ message }}
+        </div>
+    {% endfor %}
+
+    {# Форма створення нового поста (доступна лише авторизованим) #}
+    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-10">
+        <h2 class="text-lg font-semibold mb-4 text-gray-700">Що у вас нового?</h2>
+        
+        {# Якщо ви використовуєте об'єкт форми з контролера #}
+        {% if postForm is defined %}
+            {{ form_start(postForm) }}
+                <div class="space-y-4">
+                    {{ form_widget(postForm.content, {
+                        'attr': {
+                            'class': 'w-full p-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition',
+                            'placeholder': 'Напишіть щось цікаве...',
+                            'rows': 3
+                        }
+                    }) }}
+                    <div class="flex justify-end">
+                        <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-indigo-700 transition shadow-md">
+                            Опублікувати
+                        </button>
+                    </div>
+                </div>
+            {{ form_end(postForm) }}
+        {% endif %}
+    </div>
+
+    {# Список постів #}
+    <div class="space-y-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Останні публікації</h2>
+        
+        {% if posts is defined and posts|length > 0 %}
+            {% for post in posts %}
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold">
+                                {{ post.author|first|upper }}
+                            </div>
+                            <span class="font-bold text-gray-900">@{{ post.author }}</span>
+                        </div>
+                        <span class="text-xs text-gray-400">{{ post.createdAt|date('d.m.Y H:i') }}</span>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed">{{ post.content|nl2br }}</p>
+                    
+                    {# Кнопка видалення (можна додати перевірку, щоб видаляти лише свої пости) #}
+                    <div class="mt-4 pt-4 border-t border-gray-50 flex justify-end">
+                        <form method="post" action="{{ path('app_post_delete', {'id': post.id}) }}" onsubmit="return confirm('Ви впевнені?');">
+                            <button class="text-gray-400 hover:text-red-500 text-sm transition">
+                                Видалити
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-20 border-2 border-dashed border-gray-200 rounded-2xl">
+                <p class="text-gray-400 italic">Стрічка поки порожня. Будьте першим, хто щось напише!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock %}
